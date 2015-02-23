@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"code.google.com/p/go-uuid/uuid"
 	"code.google.com/p/goauth2/oauth"
@@ -27,6 +29,41 @@ type AlphaWingController struct {
 
 const LoginSessionKey = "LoginSessionKey"
 const OAuthSessionKey = "OAuthSessionKey"
+
+func (c AlphaWingController) GetBundlePlist(bundleId int) revel.Result {
+	file, err := os.Open(revel.BasePath + "/test.plist")
+	if err != nil {
+		panic(err)
+	}
+
+	c.Response.ContentType = "application/x-plist"
+	return c.RenderFile(file, revel.Attachment)
+}
+
+func (c AlphaWingController) GetDownloadIpaBundle(bundleId int) revel.Result {
+	bundle, err := models.GetBundle(c.Txn, bundleId)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, file, err := c.GoogleService.DownloadFile(bundle.FileId)
+	if err != nil {
+		panic(err)
+	}
+
+	modtime, err := time.Parse(time.RFC3339, file.ModifiedDate)
+	if err != nil {
+		panic(err)
+	}
+
+	err = c.createAudit(models.ResourceBundle, bundleId, models.ActionDownload)
+	if err != nil {
+		panic(err)
+	}
+
+	c.Response.ContentType = "application/octet-stream"
+	return c.RenderBinary(resp.Body, file.OriginalFilename, revel.Attachment, modtime)
+}
 
 func (c AlphaWingController) Index() revel.Result {
 	if !c.isLogin() {

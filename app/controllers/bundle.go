@@ -75,6 +75,10 @@ func (c BundleControllerWithValidation) PostDeleteBundle(bundleId int) revel.Res
 	return c.Redirect(routes.AppControllerWithValidation.GetApp(bundle.AppId))
 }
 
+func (c BundleControllerWithValidation) GetDownloadBundle(bundleId int) revel.Result {
+	return c.Render()
+}
+
 func (c BundleControllerWithValidation) GetDownloadApkBundle(bundleId int) revel.Result {
 	resp, file, err := c.GoogleService.DownloadFile(c.Bundle.FileId)
 	if err != nil {
@@ -93,10 +97,6 @@ func (c BundleControllerWithValidation) GetDownloadApkBundle(bundleId int) revel
 
 	c.Response.ContentType = "application/vnd.android.package-archive"
 	return c.RenderBinary(resp.Body, file.OriginalFilename, revel.Attachment, modtime)
-}
-
-func (c BundleControllerWithValidation) GetDownloadIpaBundle(bundleId int) revel.Result {
-	return c.Render()
 }
 
 func (c *BundleControllerWithValidation) CheckNotFound() revel.Result {
