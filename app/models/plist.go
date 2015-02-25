@@ -3,7 +3,7 @@ package models
 import "github.com/DHowett/go-plist"
 
 const (
-	AssetKind                = "software-packege"
+	AssetKind                = "software-package"
 	MetadataBundleIdentifier = "com.example.test"
 	MetadataKind             = "software"
 )
